@@ -1,4 +1,3 @@
-import pyaudio
 import wave
 import sys
 import os
@@ -8,26 +7,6 @@ import random
 def get_random_id(max):
   id = random.randint(1, max + 1)
   return id
-
-def playaudio(dir,files):
-  CHUNK = 1024
-  p = pyaudio.PyAudio()
-  for file in files:
-
-    wf = wave.open("{}/{}".format(dir,file),'rb')
-
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                  channels=wf.getnchannels(),
-                  rate=wf.getframerate(),
-                  output=True)
-
-    data = wf.readframes(CHUNK)
-    while len(data) > 0:
-      stream.write(data)
-      data = wf.readframes(CHUNK)
-  stream.stop_stream()
-  stream.close()
-  p.terminate()
 
 def createaudio(filename,dest,dir,files):
 
@@ -56,6 +35,8 @@ def map_sounds(dir):
 
     elif(sound_name == 'dot'):
       sound_alphabet_mapping['.'] = sound_file
+      sound_alphabet_mapping['!'] = sound_file
+      sound_alphabet_mapping['?'] = sound_file
 
     else:
       sound_alphabet_mapping[sound_name] = sound_file
@@ -63,6 +44,7 @@ def map_sounds(dir):
   return sound_alphabet_mapping
 
 def get_audio_content(text,audio_mapping):
+  text = text.lower()
   audio_files = []
   i=0
   while(i < len(text)):
@@ -77,10 +59,10 @@ def get_audio_content(text,audio_mapping):
           audio_files.append(soundfile)
           i += 2
           continue
-
     character = text[i]
-    soundfile = audio_mapping[character]
-    audio_files.append(soundfile)
+    if(character in audio_mapping):
+      soundfile = audio_mapping[character]
+      audio_files.append(soundfile)
     i += 1
 
   return audio_files
@@ -96,4 +78,3 @@ def get_audio(text,filename,dest_dir,sounds_lib_dir,id_max=100):
 
   file_path = createaudio(file_id,dest_dir,sounds_lib_dir,audio_files)
   return file_path
-

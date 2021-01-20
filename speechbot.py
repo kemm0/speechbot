@@ -12,16 +12,18 @@ updater = Updater(BOT_TOKEN)
 
 dispatcher = updater.dispatcher
 
+print("Bot started polling")
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+                     level=logging.INFO,filename="debug.log")
 
 def echo(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+
 def sano(update,context):
     text = update.message.text
     filtered = text.replace('/sano ', '')
     file_path = voicesynth.get_audio(filtered,'message','./generated','./sounds')
-    print(file_path)
 
     time_to_wait = 5
     time_counter = 0
@@ -39,12 +41,14 @@ def sano(update,context):
       if time_counter > time_to_wait:
         break
     if file_ready:
-      print('file ready')
+      logging.log(level=logging.INFO,msg="Created file {}".format(file_path))
       try:
         context.bot.send_voice(chat_id=update.effective_chat.id,voice=open(file_path,'rb'))
         os.remove(file_path)
       except TimedOut:
-        print("timed out")
+        logging.log(level=logging.ERROR,msg="Timed out")
+      except e:
+        logging.log(level=logging.ERROR,msg=e)
     else:
       context.bot.send_message(chat_id=update.effective_chat.id, text='failed to send speech :(')
 
